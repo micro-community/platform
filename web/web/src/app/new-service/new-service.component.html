@@ -1,0 +1,30 @@
+<div style="padding-left: 1em; margin: auto;">
+  <mat-card class="mat-card-flat">
+    <mat-card-title>
+      <a routerLink="/services">services</a> &gt; new
+    </mat-card-title>
+  </mat-card>
+  <mat-card>
+    <mat-card-title>
+      New service
+    </mat-card-title>
+    <mat-card-subtitle>
+      Running a new service on the micro platform
+    </mat-card-subtitle>
+    <p>
+      Step into the folder containing your micro service and issue the following
+      command:
+    </p>
+    <pre style="padding: 1em; background: #f6f6f6;">micro run .</pre>
+    <br />
+    <p>
+      This page will redirect you to your service once it's up and running.s
+    </p>
+    <p *ngIf="false">
+      <br />
+      We are waiting for your service to come up.<br /><br />
+      Progress:<br />
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    </p>
+  </mat-card>
+</div>
