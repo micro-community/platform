@@ -174,8 +174,7 @@ func userHandler(w http.ResponseWriter, req *http.Request) {
 
 func main() {
 	service := web.NewService(
-		web.Name("muweb-api"),
-		web.Address(":6060"),
+		web.Name("go.micro.web.platform"),
 	)
 	fmt.Println(os.Getenv("GITHUB_OAUTH_CLIENT_SECRET"))
 	oauth2Config := &oauth2.Config{
