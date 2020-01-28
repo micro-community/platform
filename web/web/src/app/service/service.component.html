@@ -1,0 +1,70 @@
+<div>
+  <mat-spinner
+    [diameter]="70"
+    style="margin: auto;"
+    *ngIf="!services"
+  ></mat-spinner>
+</div>
+<div *ngIf="services" style="padding-left: 1em; margin: auto;">
+  <mat-card class="mat-card-flat">
+    <mat-card-title>
+      <a routerLink="/services">services</a>&nbsp; &gt; <mat-icon style="color: green; vertical-align: middle;">fiber_manual_record</mat-icon> {{ serviceName }}
+    </mat-card-title>
+    <mat-tab-group>
+      <mat-tab style="padding-top: 1em;" label="Endpoints">
+        <br />
+        <form class="example-form">
+          <mat-form-field class="example-full-width">
+            <input
+              name="query"
+              matInput
+              [(ngModel)]="endpointQuery"
+              placeholder="Search endpoints"
+            />
+          </mat-form-field>
+        </form>
+        <ng-container *ngFor="let service of services">
+          <div
+            *ngFor="
+              let endpoint of service.endpoints | search: 'name':endpointQuery
+            "
+          >
+            <div style="padding-left: 2px; padding-right: 2px;">
+              <mat-expansion-panel>
+                <mat-expansion-panel-header>
+                  <mat-panel-title>
+                    {{ endpoint.name }}
+                  </mat-panel-title>
+                  <mat-panel-description>
+                    {{ endpoint.title }}
+                  </mat-panel-description>
+                </mat-expansion-panel-header>
+
+                <pre style="padding: 1em; background: #f6f6f6;">{{
+                  valueToString(endpoint.request, 1)
+                }}</pre>
+                <br />
+                <pre style="padding: 1em; background: #f6f6f6;">{{
+                  valueToString(endpoint.response, 1)
+                }}</pre>
+              </mat-expansion-panel>
+            </div>
+            <br />
+          </div>
+        </ng-container>
+      </mat-tab>
+      <mat-tab label="Logs">
+        <pre>
+            <div *ngFor="let log of logs">{{ log.message }}</div></pre>
+      </mat-tab>
+      <mat-tab label="Stats">
+        <br />
+        Stats coming soon.
+      </mat-tab>
+      <mat-tab label="Nodes">
+        <br />
+        Nodes coming soon.
+      </mat-tab>
+    </mat-tab-group>
+  </mat-card>
+</div>

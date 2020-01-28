@@ -1,0 +1,53 @@
+<div>
+  <mat-spinner
+    [diameter]="70"
+    style="margin: auto;"
+    *ngIf="!services"
+  ></mat-spinner>
+</div>
+<div *ngIf="services" style="padding-left: 1em; margin: auto;">
+  <mat-card class="mat-card-flat">
+    <mat-card-title>
+      <a routerLink="/services">services</a>
+      &nbsp;
+      <button
+        routerLink="/service/new"
+        mat-mini-fab
+        aria-label="Add new service"
+      >
+        <mat-icon>add</mat-icon>
+      </button>
+    </mat-card-title>
+    <form class="example-form">
+      <mat-form-field class="example-full-width">
+        <input
+          name="query"
+          matInput
+          [(ngModel)]="query"
+          placeholder="Search services"
+        />
+      </mat-form-field>
+    </form>
+
+    <br />
+    <mat-card
+      *ngFor="let service of services | keyvalue | search: 'key':query"
+      style="margin-bottom: 1em; background: #fbfbfb"
+    >
+      <mat-card-title style="font-size: 1.25em;">
+        <mat-icon style="color: green; vertical-align: middle;"
+          >fiber_manual_record</mat-icon
+        >
+        &nbsp;<a href="#" routerLink="/service/{{ service.key }}">{{
+          service.key
+        }}</a>
+        <mat-chip-list aria-label="Versions">
+          <mat-chip *ngFor="let serv of service.value">{{
+            serv.version
+          }}</mat-chip>
+        </mat-chip-list>
+      </mat-card-title>
+    </mat-card>
+    <br />&nbsp;
+  </mat-card>
+</div>
