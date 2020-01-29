@@ -2,7 +2,7 @@
 package build
 
 var (
-        GitCommit string
-        GitTag    string
-        BuildDate string
+	GitCommit string
+	GitTag    string
+	BuildDate string
 )
