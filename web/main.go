@@ -80,7 +80,7 @@ func servicesHandler(service web.Service) func(http.ResponseWriter, *http.Reques
 			return
 		}
 		reg := service.Options().Service.Options().Registry
-		services, err := registry.ListServices()
+		services, err := reg.ListServices()
 		if err != nil {
 			write500(w, err)
 			return
