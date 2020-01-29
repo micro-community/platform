@@ -63,7 +63,7 @@ func (s *scheduler) update() {
 	}
 
 	// compare build times
-	if buildTime.Sub(s.lastUpdate) < time.Duration(0) {
+	if buildTime.Sub(s.lastUpdate) <= time.Duration(0) {
 		return
 	}
 
