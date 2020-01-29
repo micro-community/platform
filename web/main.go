@@ -179,7 +179,6 @@ func main() {
 	service := web.NewService(
 		web.Name("go.micro.web.platform"),
 	)
-	fmt.Println(os.Getenv("GITHUB_OAUTH_CLIENT_SECRET"))
 	oauth2Config := &oauth2.Config{
 		ClientID:     os.Getenv("GITHUB_OAUTH_CLIENT_ID"),
 		ClientSecret: os.Getenv("GITHUB_OAUTH_CLIENT_SECRET"),
