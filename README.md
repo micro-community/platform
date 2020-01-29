@@ -16,3 +16,4 @@ Coming soon...
 ## LICENSE
 
 See [LICENSE](LICENSE) which makes use of [Polyform Strict](https://polyformproject.org/licenses/strict/1.0.0/). 
+Email us for commercial use at [sales@micro.mu](mailto:sales@micro.mu).
