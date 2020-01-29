@@ -8,7 +8,11 @@
 <div *ngIf="services" style="padding-left: 1em; margin: auto;">
   <mat-card class="mat-card-flat">
     <mat-card-title>
-      <a routerLink="/services">services</a>&nbsp; &gt; <mat-icon style="color: green; vertical-align: middle;">fiber_manual_record</mat-icon> {{ serviceName }}
+      <a routerLink="/services">services</a>&nbsp; &gt;
+      <mat-icon style="color: green; vertical-align: middle;"
+        >fiber_manual_record</mat-icon
+      >
+      {{ serviceName }}
     </mat-card-title>
     <mat-tab-group>
       <mat-tab style="padding-top: 1em;" label="Endpoints">
@@ -59,7 +63,57 @@
       </mat-tab>
       <mat-tab label="Stats">
         <br />
-        Stats coming soon.
+
+          <div style="display: block;">
+            <canvas
+              baseChart
+              width="400"
+              height="400"
+              [datasets]="requestRates.data"
+              [options]="requestRates.options"
+              [chartType]="requestRates.lineChartType"
+            ></canvas>
+          </div>
+          <div style="display: block;">
+            <canvas
+              baseChart
+              width="400"
+              height="400"
+              [datasets]="memoryRates.data"
+              [options]="memoryRates.options"
+              [chartType]="memoryRates.lineChartType"
+            ></canvas>
+          </div>
+          <div style="display: block;">
+            <canvas
+              baseChart
+              width="400"
+              height="400"
+              [datasets]="errorRates.data"
+              [options]="errorRates.options"
+              [chartType]="errorRates.lineChartType"
+            ></canvas>
+          </div>
+          <div style="display: block;">
+            <canvas
+              baseChart
+              width="400"
+              height="400"
+              [datasets]="concurrencyRates.data"
+              [options]="concurrencyRates.options"
+              [chartType]="concurrencyRates.lineChartType"
+            ></canvas>
+          </div>
+          <div style="display: block;">
+            <canvas
+              baseChart
+              width="400"
+              height="400"
+              [datasets]="gcRates.data"
+              [options]="gcRates.options"
+              [chartType]="gcRates.lineChartType"
+            ></canvas>
+          </div>
       </mat-tab>
       <mat-tab label="Nodes">
         <br />
