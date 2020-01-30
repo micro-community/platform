@@ -9,11 +9,14 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/dghubble/gologin/v2"
 	"github.com/dghubble/gologin/v2/github"
+	gologinOauth "github.com/dghubble/gologin/v2/oauth2"
+	githubApi "github.com/google/go-github/v29/github"
 	"github.com/google/uuid"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/registry"
@@ -21,7 +24,6 @@ import (
 	memstore "github.com/micro/go-micro/store/memory"
 	"github.com/micro/go-micro/web"
 	logproto "github.com/micro/micro/debug/log/proto"
-
 	statsproto "github.com/micro/micro/debug/stats/proto"
 	"golang.org/x/oauth2"
 	githubOAuth2 "golang.org/x/oauth2/github"
@@ -38,6 +40,11 @@ type User struct {
 func issueSession() http.Handler {
 	fn := func(w http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
+		oauthToken, err := gologinOauth.TokenFromContext(ctx)
+		if err != nil {
+			write500(w, err)
+			return
+		}
 		githubUser, err := github.UserFromContext(ctx)
 		if err != nil {
 			write500(w, err)
@@ -50,6 +57,28 @@ func issueSession() http.Handler {
 		userJSON, err := json.Marshal(user)
 		if err != nil {
 			write500(w, err)
+			return
+		}
+
+		ts := oauth2.StaticTokenSource(
+			&oauth2.Token{AccessToken: oauthToken.AccessToken},
+		)
+		tc := oauth2.NewClient(ctx, ts)
+		client := githubApi.NewClient(tc)
+
+		teamID, err := strconv.ParseInt(os.Getenv("GITHUB_TEAM_ID"), 10, 64)
+		if err != nil {
+			write500(w, err)
+			return
+		}
+		membership, _, err := client.Teams.GetTeamMembership(context.TODO(), teamID, githubUser.GetLogin())
+		if err != nil {
+			log.Println(err)
+			http.Redirect(w, req, os.Getenv("FRONTEND_ADDRESS")+"/login/not_authorized=true", http.StatusFound)
+			return
+		}
+		if membership.GetState() != "active" {
+			http.Redirect(w, req, os.Getenv("FRONTEND_ADDRESS")+"/login?not_authorized=true", http.StatusFound)
 			return
 		}
 		token := uuid.New().String()
@@ -79,6 +108,10 @@ func servicesHandler(service web.Service) func(http.ResponseWriter, *http.Reques
 		if (*req).Method == "OPTIONS" {
 			return
 		}
+		if err := isLoggedIn(req.URL.Query().Get("token")); err != nil {
+			write400(w, err)
+			return
+		}
 		reg := service.Options().Service.Options().Registry
 		services, err := reg.ListServices()
 		if err != nil {
@@ -104,6 +137,10 @@ func logsHandler(service web.Service) func(http.ResponseWriter, *http.Request) {
 		if (*req).Method == "OPTIONS" {
 			return
 		}
+		if err := isLoggedIn(req.URL.Query().Get("token")); err != nil {
+			write400(w, err)
+			return
+		}
 		service := req.URL.Query().Get("service")
 		if len(service) == 0 {
 			write400(w, errors.New("Service missing"))
@@ -127,6 +164,10 @@ func statsHandler(service web.Service) func(http.ResponseWriter, *http.Request) 
 		if (*req).Method == "OPTIONS" {
 			return
 		}
+		if err := isLoggedIn(req.URL.Query().Get("token")); err != nil {
+			write400(w, err)
+			return
+		}
 		service := req.URL.Query().Get("service")
 		if len(service) == 0 {
 			write400(w, errors.New("Service missing"))
@@ -145,6 +186,17 @@ func statsHandler(service web.Service) func(http.ResponseWriter, *http.Request) 
 		}
 		write(w, rsp.GetStats())
 	}
+}
+
+func isLoggedIn(token string) error {
+	userRecord, err := userStore.Read(token)
+	if err != nil {
+		return err
+	}
+	if len(userRecord) == 0 {
+		return errors.New("Not logged in")
+	}
+	return nil
 }
 
 func userHandler(w http.ResponseWriter, req *http.Request) {
@@ -184,6 +236,7 @@ func main() {
 		ClientSecret: os.Getenv("GITHUB_OAUTH_CLIENT_SECRET"),
 		RedirectURL:  os.Getenv("GITHUB_OAUTH_REDIRECT_URL"),
 		Endpoint:     githubOAuth2.Endpoint,
+		Scopes:       []string{"read:org"},
 	}
 	// state param cookies require HTTPS by default; disable for localhost development
 	stateConfig := gologin.DebugOnlyCookieConfig
@@ -200,7 +253,7 @@ func main() {
 			return
 		}
 		http.ServeFile(w, req, "./app/dist/micro/index.html")
- 	})
+	})
 
 	if err := service.Init(); err != nil {
 		log.Fatal(err)
@@ -265,7 +318,7 @@ func write500(w http.ResponseWriter, err error) {
 		"error": err.Error(),
 	})
 	if err != nil {
-		write500(w, err)
+		log.Println(err)
 		return
 	}
 	writeString(w, 500, string(rawBody))

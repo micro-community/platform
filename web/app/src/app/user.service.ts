@@ -4,8 +4,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../environments/environment';
 import { CookieService } from 'ngx-cookie-service';
 import { NotificationsService } from 'angular2-notifications';
-import { Subject } from 'rxjs';
-import { ThrowStmt } from '@angular/compiler';
+import {Router} from "@angular/router"
 
 @Injectable()
 export class UserService {
@@ -14,7 +13,8 @@ export class UserService {
   constructor(
     private http: HttpClient,
     private cookie: CookieService,
-    private notif: NotificationsService
+    private notif: NotificationsService,
+    private router: Router,
     ) {
     this.get().then(user => {
       for (const k of Object.keys(user)) {
@@ -65,7 +65,7 @@ export class UserService {
             return
           }
           console.log(e)
-          this.notif.error("User load error", JSON.stringify(e))
+          this.router.navigate(["/login"])
         });
     })
   }
