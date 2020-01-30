@@ -79,6 +79,10 @@ ${indent}}`;
     function onlyUnique(value, index, self) {
       return self.indexOf(value) === index;
     }
+    const STAT_WINDOW = 8 * 60 * 1000; /* ms */
+    this.stats = this.stats.filter(stat => {
+      return Date.now() - (stat.timestamp * 1000 ) < STAT_WINDOW
+    })
     const nodes = this.stats
       .map(stat => stat.service.node.id)
       .filter(onlyUnique);
@@ -219,6 +223,7 @@ ${indent}}`;
     }
     return {
       options: {
+        maintainAspectRatio: false,
         animation: {
           duration: 0
         },

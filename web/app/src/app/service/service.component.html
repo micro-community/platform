@@ -63,8 +63,8 @@
       </mat-tab>
       <mat-tab label="Stats">
         <br />
-
-          <div style="display: block;">
+        <div  style="display:flex; flex-direction:column;">
+          <div style="flex-grow:1; height:300px; position:relative">
             <canvas
               baseChart
               width="400"
@@ -74,7 +74,7 @@
               [chartType]="requestRates.lineChartType"
             ></canvas>
           </div>
-          <div style="display: block;">
+          <div style="flex-grow:1; height:300px; position:relative">
             <canvas
               baseChart
               width="400"
@@ -84,7 +84,7 @@
               [chartType]="memoryRates.lineChartType"
             ></canvas>
           </div>
-          <div style="display: block;">
+          <div style="flex-grow:1; height:300px; position:relative">
             <canvas
               baseChart
               width="400"
@@ -94,7 +94,7 @@
               [chartType]="errorRates.lineChartType"
             ></canvas>
           </div>
-          <div style="display: block;">
+          <div style="flex-grow:1; height:300px; position:relative">
             <canvas
               baseChart
               width="400"
@@ -104,7 +104,7 @@
               [chartType]="concurrencyRates.lineChartType"
             ></canvas>
           </div>
-          <div style="display: block;">
+          <div style="flex-grow:1; height:300px; position:relative">
             <canvas
               baseChart
               width="400"
@@ -114,6 +114,7 @@
               [chartType]="gcRates.lineChartType"
             ></canvas>
           </div>
+        </div>
       </mat-tab>
       <mat-tab label="Nodes">
         <br />
