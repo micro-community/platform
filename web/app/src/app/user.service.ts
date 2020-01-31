@@ -27,7 +27,6 @@ export class UserService {
       })
       .catch(e => {
         this.isUserLoggedIn.next(false);
-        console.log(e);
       });
   }
 
@@ -39,7 +38,7 @@ export class UserService {
     // todo We are nulling out the name here because that's what we use
     // for user existence checks.
     this.user.name = "";
-    this.cookie.set("token", "");
+    this.cookie.delete("token", "/")
     document.location.href = "/";
   }
 
