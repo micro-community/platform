@@ -31,8 +31,8 @@ export class AuthGuard implements CanActivate {
         if (loggedIn) {
           observer.next(true)
         } else {
-          // confirm("redirect") ? window.location.href = environment.backendUrl + "/v1/github/login" : console.log("stopping")
-          environment.backendUrl + "/v1/github/login"
+          //confirm("redirect") ? window.location.href = environment.backendUrl + "/v1/github/login" : console.log("stopping")
+          window.location.href = environment.backendUrl + "/v1/github/login"
           observer.next(false)
         }
         observer.complete()
