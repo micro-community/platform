@@ -74,11 +74,11 @@ func issueSession() http.Handler {
 		membership, _, err := client.Teams.GetTeamMembership(context.TODO(), teamID, githubUser.GetLogin())
 		if err != nil {
 			log.Println(err)
-			http.Redirect(w, req, os.Getenv("FRONTEND_ADDRESS")+"/login/not_authorized=true", http.StatusFound)
+			http.Redirect(w, req, os.Getenv("FRONTEND_ADDRESS")+"/not-invited", http.StatusFound)
 			return
 		}
 		if membership.GetState() != "active" {
-			http.Redirect(w, req, os.Getenv("FRONTEND_ADDRESS")+"/login?not_authorized=true", http.StatusFound)
+			http.Redirect(w, req, os.Getenv("FRONTEND_ADDRESS")+"/not-invited", http.StatusFound)
 			return
 		}
 		token := uuid.New().String()
@@ -97,7 +97,14 @@ func issueSession() http.Handler {
 		// Include the minted session in a query parameter so the frontend can save it.
 		// Although with https query paramteres are encrypted, this is still not the most ideal
 		// way to do it. Will suffice for now.
-		http.Redirect(w, req, os.Getenv("FRONTEND_ADDRESS")+"/services?token="+token, http.StatusFound)
+		expire := time.Now().AddDate(0, 0, 1)
+		http.SetCookie(w, &http.Cookie{
+			Name:    "token",
+			Value:   token,
+			Expires: expire,
+			Path:    "/",
+		})
+		http.Redirect(w, req, os.Getenv("FRONTEND_ADDRESS"), http.StatusFound)
 	}
 	return http.HandlerFunc(fn)
 }
@@ -127,7 +134,7 @@ func servicesHandler(service web.Service) func(http.ResponseWriter, *http.Reques
 			}
 			ret = append(ret, service...)
 		}
-		write(w, ret)
+		writeJSON(w, ret)
 	}
 }
 
@@ -154,7 +161,7 @@ func logsHandler(service web.Service) func(http.ResponseWriter, *http.Request) {
 			write500(w, err)
 			return
 		}
-		write(w, rsp.GetRecords())
+		writeJSON(w, rsp.GetRecords())
 	}
 }
 
@@ -184,7 +191,7 @@ func statsHandler(service web.Service) func(http.ResponseWriter, *http.Request) 
 			write500(w, err)
 			return
 		}
-		write(w, rsp.GetStats())
+		writeJSON(w, rsp.GetStats())
 	}
 }
 
@@ -224,7 +231,7 @@ func userHandler(w http.ResponseWriter, req *http.Request) {
 		write500(w, err)
 		return
 	}
-	write(w, user)
+	writeJSON(w, user)
 }
 
 func main() {
@@ -275,23 +282,23 @@ func setupResponse(w *http.ResponseWriter, req *http.Request) {
 	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 }
 
-func write(w http.ResponseWriter, body interface{}) {
+func writeJSON(w http.ResponseWriter, body interface{}) {
 	rawBody, err := json.Marshal(body)
 	if err != nil {
 		write500(w, err)
 		return
 	}
-	writeString(w, 200, string(rawBody))
+	write(w, "application/json", 200, string(rawBody))
 }
 
-func writeString(w http.ResponseWriter, status int, body string) {
+func write(w http.ResponseWriter, contentType string, status int, body string) {
 	w.Header().Set("Content-Length", fmt.Sprintf("%v", len(body)))
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", contentType)
 	w.WriteHeader(status)
 	fmt.Fprintf(w, `%v`, body)
 }
 
-func readJsonBody(r *http.Request, expectedBody interface{}) error {
+func readJSONBody(r *http.Request, expectedBody interface{}) error {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		return errors.New("unable to read body")
@@ -310,7 +317,7 @@ func write400(w http.ResponseWriter, err error) {
 		write500(w, err)
 		return
 	}
-	writeString(w, 400, string(rawBody))
+	write(w, "application/json", 400, string(rawBody))
 }
 
 func write500(w http.ResponseWriter, err error) {
@@ -321,5 +328,5 @@ func write500(w http.ResponseWriter, err error) {
 		log.Println(err)
 		return
 	}
-	writeString(w, 500, string(rawBody))
+	write(w, "application/json", 500, string(rawBody))
 }
