@@ -14,7 +14,6 @@ import (
 func main() {
 	service := micro.NewService(
 		micro.Name("go.micro.api.platform"),
-		micro.Version("latest"),
 	)
 	service.Init()
 
