@@ -74,7 +74,7 @@ export class ServiceComponent implements OnInit {
         this.stats = stats;
         this.processStats();
       });
-      this.ses.trace().then(spans => {
+      this.ses.trace(this.serviceName).then(spans => {
         this.processTraces(spans);
       });
       this.intervalId = setInterval(() => {

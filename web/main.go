@@ -194,10 +194,19 @@ func tracesHandler(service web.Service) func(http.ResponseWriter, *http.Request)
 		reqProto := &traceproto.ReadRequest{
 			Past: true,
 		}
+		var limit int64 = 1000
+		if len(req.URL.Query().Get("limit")) > 0 {
+			var err error
+			limit, err = strconv.ParseInt(req.URL.Query().Get("limit"), 10, 64)
+			if err != nil {
+				write400(w, err)
+			}
+		}
 		if len(serviceName) > 0 {
 			reqProto.Service = &traceproto.Service{
 				Name: serviceName,
 			}
+			reqProto.Limit = limit
 		}
 		request := client.NewRequest("go.micro.debug", "Trace.Read", reqProto)
 		rsp := &traceproto.ReadResponse{}
