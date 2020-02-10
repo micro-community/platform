@@ -1,8 +1,8 @@
-import { Component, OnInit, ViewEncapsulation, ViewChild } from "@angular/core";
+import { Component, OnInit, ViewEncapsulation } from "@angular/core";
 import { ServiceService } from "../service.service";
 import * as types from "../types";
 import { ActivatedRoute } from "@angular/router";
-import {PageEvent, MatPaginator} from '@angular/material/paginator';
+import {FormControl} from '@angular/forms';
 import * as _ from "lodash";
 
 @Component({

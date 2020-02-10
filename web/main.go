@@ -33,7 +33,7 @@ type User struct {
 }
 
 // issueSession issues a cookie session after successful Github login
-func issueSession() http.Handler {
+func issueSession(service web.Service) http.Handler {
 	fn := func(w http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 		oauthToken, err := gologinOauth.TokenFromContext(ctx)
@@ -53,14 +53,29 @@ func issueSession() http.Handler {
 		tc := oauth2.NewClient(ctx, ts)
 		client := githubApi.NewClient(tc)
 
+		// Have to list the emails separately as users with a private email address
+		// will not have an email in githubUser.Email
+		emails, _, err := client.Users.ListEmails(ctx, nil)
+		if err != nil {
+			write500(w, err)
+			return
+		}
+		primaryEmail := ""
+		for _, email := range emails {
+			if email.GetPrimary() {
+				primaryEmail = email.GetEmail()
+			}
+		}
+		githubUser.Email = &primaryEmail
+
 		teamID, err := strconv.ParseInt(os.Getenv("GITHUB_TEAM_ID"), 10, 64)
 		if err != nil {
 			write500(w, err)
 			return
 		}
+
 		membership, _, err := client.Teams.GetTeamMembership(req.Context(), teamID, githubUser.GetLogin())
 		if err != nil {
-			log.Println(err)
 			http.Redirect(w, req, os.Getenv("FRONTEND_ADDRESS")+"/not-invited", http.StatusFound)
 			return
 		}
@@ -68,15 +83,17 @@ func issueSession() http.Handler {
 			http.Redirect(w, req, os.Getenv("FRONTEND_ADDRESS")+"/not-invited", http.StatusFound)
 			return
 		}
-
-		acc, err := auth.DefaultAuth.Generate(*githubUser.Email, auth.Metadata(
+		acc, err := service.Options().Service.Options().Auth.Generate(*githubUser.Email, auth.Metadata(
 			map[string]string{
 				"email": *githubUser.Email,
 				"name":  *githubUser.Name,
-			},
-		))
+			}))
 		if err != nil {
 			write500(w, err)
+			return
+		}
+		if acc == nil {
+			write500(w, errors.New("Account is empty"))
 			return
 		}
 
@@ -100,7 +117,7 @@ func servicesHandler(service web.Service) func(http.ResponseWriter, *http.Reques
 		if (*req).Method == "OPTIONS" {
 			return
 		}
-		if err := isLoggedIn(req.URL.Query().Get("token")); err != nil {
+		if err := isLoggedIn(service, req.URL.Query().Get("token")); err != nil {
 			write400(w, err)
 			return
 		}
@@ -129,7 +146,7 @@ func logsHandler(service web.Service) func(http.ResponseWriter, *http.Request) {
 		if (*req).Method == "OPTIONS" {
 			return
 		}
-		if err := isLoggedIn(req.URL.Query().Get("token")); err != nil {
+		if err := isLoggedIn(service, req.URL.Query().Get("token")); err != nil {
 			write400(w, err)
 			return
 		}
@@ -156,7 +173,7 @@ func statsHandler(service web.Service) func(http.ResponseWriter, *http.Request) 
 		if (*req).Method == "OPTIONS" {
 			return
 		}
-		if err := isLoggedIn(req.URL.Query().Get("token")); err != nil {
+		if err := isLoggedIn(service, req.URL.Query().Get("token")); err != nil {
 			write400(w, err)
 			return
 		}
@@ -186,7 +203,7 @@ func tracesHandler(service web.Service) func(http.ResponseWriter, *http.Request)
 		if (*req).Method == "OPTIONS" {
 			return
 		}
-		if err := isLoggedIn(req.URL.Query().Get("token")); err != nil {
+		if err := isLoggedIn(service, req.URL.Query().Get("token")); err != nil {
 			write400(w, err)
 			return
 		}
@@ -218,32 +235,43 @@ func tracesHandler(service web.Service) func(http.ResponseWriter, *http.Request)
 	}
 }
 
-func isLoggedIn(token string) error {
-	_, err := auth.DefaultAuth.Validate(token)
+func isLoggedIn(service web.Service, token string) error {
+	_, err := service.Options().Service.Options().Auth.Validate(token)
 	return err
 }
 
-func userHandler(w http.ResponseWriter, req *http.Request) {
-	setupResponse(&w, req)
-	if (*req).Method == "OPTIONS" {
-		return
-	}
-	token := req.URL.Query().Get("token")
-	if len(token) == 0 {
-		write400(w, errors.New("Token missing"))
-		return
-	}
+func userHandler(service web.Service) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, req *http.Request) {
+		setupResponse(&w, req)
+		if (*req).Method == "OPTIONS" {
+			return
+		}
+		token := req.URL.Query().Get("token")
+		if len(token) == 0 {
+			write400(w, errors.New("Token missing"))
+			return
+		}
 
-	acc, err := auth.DefaultAuth.Validate(token)
-	if err != nil {
-		write400(w, err)
-		return
-	}
+		acc, err := service.Options().Service.Options().Auth.Validate(token)
+		if err != nil {
+			write400(w, err)
+			return
+		}
+		if acc == nil {
+			write400(w, errors.New("Not found"))
+			return
+		}
 
-	writeJSON(w, &User{
-		Name:  acc.Metadata["name"],
-		Email: acc.Metadata["email"],
-	})
+		if acc.Metadata == nil {
+			write400(w, errors.New("Metadata not found"))
+			return
+		}
+
+		writeJSON(w, &User{
+			Name:  acc.Metadata["name"],
+			Email: acc.Metadata["email"],
+		})
+	}
 }
 
 func main() {
@@ -255,13 +283,15 @@ func main() {
 		ClientSecret: os.Getenv("GITHUB_OAUTH_CLIENT_SECRET"),
 		RedirectURL:  os.Getenv("GITHUB_OAUTH_REDIRECT_URL"),
 		Endpoint:     githubOAuth2.Endpoint,
-		Scopes:       []string{"read:org"},
+		Scopes:       []string{"user:email", "read:org"},
 	}
 	// state param cookies require HTTPS by default; disable for localhost development
 	stateConfig := gologin.DebugOnlyCookieConfig
 	service.Handle("/v1/github/login", github.StateHandler(stateConfig, github.LoginHandler(oauth2Config, nil)))
-	service.Handle("/v1/auth/verify", github.StateHandler(stateConfig, github.CallbackHandler(oauth2Config, issueSession(), nil)))
-	service.HandleFunc("/v1/user", userHandler)
+	service.Handle("/v1/auth/verify", github.StateHandler(stateConfig, github.CallbackHandler(oauth2Config, func() http.Handler {
+		return issueSession(service)
+	}(), nil)))
+	service.HandleFunc("/v1/user", userHandler(service))
 	service.HandleFunc("/v1/services", servicesHandler(service))
 	service.HandleFunc("/v1/service/logs", logsHandler(service))
 	service.HandleFunc("/v1/service/stats", statsHandler(service))
