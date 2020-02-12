@@ -5,10 +5,10 @@ import (
 
 	"github.com/micro/go-micro/v2"
 	"github.com/micro/go-micro/v2/errors"
-	"github.com/micro/go-micro/v2/runtime"
 	"github.com/micro/go-micro/v2/util/log"
 
 	pb "github.com/micro/platform/api/proto"
+	platform "github.com/micro/platform/service/proto"
 )
 
 func main() {
@@ -17,7 +17,8 @@ func main() {
 	)
 	service.Init()
 
-	pb.RegisterPlatformHandler(service.Server(), NewHandler())
+	h := NewHandler(service)
+	pb.RegisterPlatformHandler(service.Server(), h)
 
 	if err := service.Run(); err != nil {
 		log.Error(err)
@@ -26,12 +27,14 @@ func main() {
 
 // Handler is an impementation of the platform api
 type Handler struct {
-	runtime runtime.Runtime
+	Platform platform.PlatformService
 }
 
 // NewHandler returns an initialized Handler
-func NewHandler() *Handler {
-	return &Handler{runtime: runtime.DefaultRuntime}
+func NewHandler(service micro.Service) *Handler {
+	return &Handler{
+		Platform: platform.NewPlatformService("go.micro.platform", service.Client()),
+	}
 }
 
 // CreateService deploys a service on the platform
@@ -40,7 +43,11 @@ func (h *Handler) CreateService(ctx context.Context, req *pb.CreateServiceReques
 		return errors.BadRequest("go.micro.api.platform", "service required")
 	}
 
-	return h.runtime.Create(deserializeService(req.Service))
+	_, err := h.Platform.CreateService(ctx, &platform.CreateServiceRequest{
+		Service: deserializeService(req.Service),
+	})
+
+	return err
 }
 
 // ReadService returns information about services matching the query
@@ -49,17 +56,15 @@ func (h *Handler) ReadService(ctx context.Context, req *pb.ReadServiceRequest, r
 		return errors.BadRequest("go.micro.api.platform", "service required")
 	}
 
-	resp, err := h.runtime.Read(
-		runtime.ReadType(req.Service.Type),
-		runtime.ReadService(req.Service.Name),
-		runtime.ReadVersion(req.Service.Version),
-	)
+	resp, err := h.Platform.ReadService(ctx, &platform.ReadServiceRequest{
+		Service: deserializeService(req.Service),
+	})
 	if err != nil {
 		return err
 	}
 
-	rsp.Services = make([]*pb.Service, len(resp))
-	for i, s := range resp {
+	rsp.Services = make([]*pb.Service, len(resp.Services))
+	for i, s := range resp.Services {
 		rsp.Services[i] = serializeService(s)
 	}
 
@@ -72,7 +77,11 @@ func (h *Handler) UpdateService(ctx context.Context, req *pb.UpdateServiceReques
 		return errors.BadRequest("go.micro.api.platform", "service required")
 	}
 
-	return h.runtime.Update(deserializeService(req.Service))
+	_, err := h.Platform.UpdateService(ctx, &platform.UpdateServiceRequest{
+		Service: deserializeService(req.Service),
+	})
+
+	return err
 }
 
 // DeleteService terminates a service running on the platform
@@ -81,38 +90,42 @@ func (h *Handler) DeleteService(ctx context.Context, req *pb.DeleteServiceReques
 		return errors.BadRequest("go.micro.api.platform", "service required")
 	}
 
-	return h.runtime.Delete(deserializeService(req.Service))
+	_, err := h.Platform.DeleteService(ctx, &platform.DeleteServiceRequest{
+		Service: deserializeService(req.Service),
+	})
+
+	return err
 }
 
 // ListServices returns all the services running on the platform
 func (h *Handler) ListServices(ctx context.Context, req *pb.ListServicesRequest, rsp *pb.ListServicesResponse) error {
-	resp, err := h.runtime.List()
+	resp, err := h.Platform.ListServices(ctx, &platform.ListServicesRequest{})
 	if err != nil {
 		return err
 	}
 
-	rsp.Services = make([]*pb.Service, len(resp))
-	for i, s := range resp {
+	rsp.Services = make([]*pb.Service, len(resp.Services))
+	for i, s := range resp.Services {
 		rsp.Services[i] = serializeService(s)
 	}
 
 	return nil
 }
 
-func serializeService(srv *runtime.Service) *pb.Service {
+func serializeService(service *platform.Service) *pb.Service {
 	return &pb.Service{
-		Name:     srv.Name,
-		Version:  srv.Version,
-		Source:   srv.Source,
-		Metadata: srv.Metadata,
+		Name:     service.Name,
+		Version:  service.Version,
+		Source:   service.Source,
+		Metadata: service.Metadata,
 	}
 }
 
-func deserializeService(srv *pb.Service) *runtime.Service {
-	return &runtime.Service{
-		Name:     srv.Name,
-		Version:  srv.Version,
-		Source:   srv.Source,
-		Metadata: srv.Metadata,
+func deserializeService(service *pb.Service) *platform.Service {
+	return &platform.Service{
+		Name:     service.Name,
+		Version:  service.Version,
+		Source:   service.Source,
+		Metadata: service.Metadata,
 	}
 }
