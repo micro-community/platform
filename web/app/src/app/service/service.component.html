@@ -15,6 +15,7 @@
       {{ serviceName }}
     </mat-card-title>
     <mat-tab-group
+      animationDuration="0ms"
       [selectedIndex]="selected"
       (selectedIndexChange)="tabChange($event)"
     >
@@ -46,14 +47,26 @@
                     {{ endpoint.title }}
                   </mat-panel-description>
                 </mat-expansion-panel-header>
-
-                <pre style="padding: 1em; background: #f6f6f6;">{{
-                  valueToString(endpoint.request, 1)
-                }}</pre>
-                <br />
-                <pre style="padding: 1em; background: #f6f6f6;">{{
-                  valueToString(endpoint.response, 1)
-                }}</pre>
+                <mat-tab-group animationDuration="0ms">
+                  <mat-tab label="Definition">
+                    <ng-template matTabContent>
+                      <br />
+                      <pre style="padding: 1em; background: #f6f6f6;">{{
+                        valueToString(endpoint.request, 1)
+                      }}</pre>
+                      <br />
+                      <pre style="padding: 1em; background: #f6f6f6;">{{
+                        valueToString(endpoint.response, 1)
+                      }}</pre>
+                    </ng-template>
+                  </mat-tab>
+                  <mat-tab label="Call">
+                    <ng-template matTabContent>
+                      <br />
+                      asd
+                    </ng-template>
+                  </mat-tab>
+                </mat-tab-group>
               </mat-expansion-panel>
             </div>
             <br />
@@ -67,9 +80,16 @@
       <mat-tab label="Stats">
         <ng-template matTabContent>
           <br />
+          <div style="text-align: center">
+            <mat-checkbox class="example-margin" [(ngModel)]="refresh"
+              >Keep refreshing</mat-checkbox
+            >
+          </div>
+          <br />
           <div style="display:flex; flex-direction:column;">
             <div style="flex-grow:1; height:300px; position:relative">
               <canvas
+                *ngIf="requestRates.data.length > 0"
                 baseChart
                 width="400"
                 height="400"
@@ -80,6 +100,7 @@
             </div>
             <div style="flex-grow:1; height:300px; position:relative">
               <canvas
+                *ngIf="memoryRates.data.length > 0"
                 baseChart
                 width="400"
                 height="400"
@@ -90,6 +111,7 @@
             </div>
             <div style="flex-grow:1; height:300px; position:relative">
               <canvas
+                *ngIf="errorRates.data.length > 0"
                 baseChart
                 width="400"
                 height="400"
@@ -100,6 +122,7 @@
             </div>
             <div style="flex-grow:1; height:300px; position:relative">
               <canvas
+                *ngIf="concurrencyRates.data.length > 0"
                 baseChart
                 width="400"
                 height="400"
@@ -110,6 +133,7 @@
             </div>
             <div style="flex-grow:1; height:300px; position:relative">
               <canvas
+                *ngIf="gcRates.data.length > 0"
                 baseChart
                 width="400"
                 height="400"
@@ -132,7 +156,8 @@
             <a href="#" (click)="show(traceData)"
               >{{ prettyId(traceData.traceId) }} ({{
                 traceData.dataTable.length - 1
-              }})</a
+              }}) &#8212;
+              {{ traceData.dataTable[1][2] | date: "short" }}</a
             ><br /><br />
             <div
               *ngIf="traceData.show"

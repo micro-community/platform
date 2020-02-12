@@ -2,7 +2,7 @@ import { Component, OnInit, ViewEncapsulation } from "@angular/core";
 import { ServiceService } from "../service.service";
 import * as types from "../types";
 import { ActivatedRoute } from "@angular/router";
-import { Subject } from 'rxjs';
+import { Subject } from "rxjs";
 import * as _ from "lodash";
 
 @Component({
@@ -24,10 +24,11 @@ export class ServiceComponent implements OnInit {
   serviceName: string;
   endpointQuery: string;
   intervalId: any;
+  refresh = true;
 
   selected = 0;
   tabValueChange = new Subject<number>();
-  
+
   public pageSize = 10;
   public currentPage = 0;
   public length = 0;
@@ -37,14 +38,14 @@ export class ServiceComponent implements OnInit {
     this.pageSize = e.pageSize;
     this.iterator();
   }
-  
+
   show(td) {
-    td.show = !td.show
+    td.show = !td.show;
     return false;
   }
 
   prettyId(id: string) {
-    return id.substring(0, 8)
+    return id.substring(0, 8);
   }
 
   private iterator() {
@@ -75,8 +76,8 @@ export class ServiceComponent implements OnInit {
         this.processTraces(spans);
       });
       this.intervalId = setInterval(() => {
-        if (this.selected !== 2) {
-          return
+        if (this.selected !== 2 || !this.refresh) {
+          return;
         }
         this.ses.stats(this.serviceName).then(stats => {
           this.stats = stats;
@@ -84,20 +85,20 @@ export class ServiceComponent implements OnInit {
         });
       }, 5000);
       this.tabValueChange.subscribe(index => {
-        if (index !== 2) {
-          return
+        if (index !== 2 || !this.refresh) {
+          return;
         }
         this.ses.stats(this.serviceName).then(stats => {
           this.stats = stats;
           this.processStats();
         });
-      })
+      });
     });
   }
 
   tabChange($event: number) {
     this.selected = $event;
-    this.tabValueChange.next(this.selected)
+    this.tabValueChange.next(this.selected);
   }
 
   ngOnDestroy() {
@@ -125,60 +126,102 @@ ${indent}}`;
 
   // Stats/ Chart related things
 
+  prettyTime(ms: number): string {
+    if (ms < 1000) {
+      return Math.floor(ms) + "ms";
+    }
+    return (ms / 1000).toFixed(3) + "s";
+  }
+
+  traceDuration(spans: (String | Date)[][]): string {
+    const durations = spans.slice(1).map(span => {
+      return (
+        (span[3] as Date).getMilliseconds() -
+        (span[2] as Date).getMilliseconds()
+      );
+    });
+    return this.prettyTime(durations.reduce((a, b) => a + b, 0));
+  }
+
   processTraces(spans: types.Span[]) {
     if (!spans) {
-      return
+      return;
     }
     const groupedSpans = _.values(_.groupBy(_.uniqBy(spans, "id"), "trace"));
     let traceDatas: any[] = [];
     groupedSpans.forEach(spanGroup => {
       const spansToDisplay = _.orderBy(
-        spanGroup.map(d => {
-          return [
-            d.name,
-            new Date(d.started / 1000000),
-            new Date((d.started + d.duration) / 1000000)
-          ];
+        spanGroup.map((d, index) => {
+          let start = d.started / 1000000;
+          let end = (d.started + d.duration) / 1000000;
+          let name = "Handle: " + d.name + " " + this.prettyTime(end - start);
+          if (d.type == 1) {
+            name = "Call: " + d.name + " " + this.prettyTime(end - start);
+          }
+          return ["", name, new Date(start), new Date(end)];
         }),
         sp => {
           const row = sp as Date[];
-          return row[1];
+          return row[2];
         },
         ["asc"]
       );
-      const h = (spansToDisplay.length +1) * 40 + 40
+      spansToDisplay.forEach((v, i) => {
+        v[0] = "" + i;
+      });
+
+      const minMax = (): [Date, Date] => {
+        const firstStart = (spansToDisplay[0][2] as Date).getTime();
+        const lastEnd = (spansToDisplay[
+          spansToDisplay.length - 1
+        ][3] as Date).getTime();
+        let leftPad = 1;
+        let rightPad = 1;
+        if (lastEnd - firstStart < 1000) {
+          leftPad = (lastEnd - firstStart) / 2;
+          rightPad = (lastEnd - firstStart) / 2;
+        }
+        const minDate = new Date(firstStart - leftPad);
+        const maxDate = new Date(lastEnd + rightPad);
+        return [minDate, maxDate];
+      };
+
+      const h = (spansToDisplay.length + 1) * 40 + 40;
+      const [min, max] = minMax();
       let traceData = {
         // Display related things
         traceId: spanGroup[0].trace,
-        divHeight: h,
+        divHeight: h + 20,
         // Chart related options
         chartType: "Timeline",
-        dataTable: ([["Name", "From", "To"]] as any[][]).concat(spansToDisplay),
+
+        dataTable: ([["Span", "Name", "From", "To"]] as any[][]).concat(
+          spansToDisplay
+        ),
         options: {
           height: h,
           timeline: {
-            tooltipDateFormat: 'HH:mm:ss.SSS',
+            tooltipDateFormat: "HH:mm:ss.SSS"
           },
           hAxis: {
-            format: 'yyyy-MM-dd HH:mm:ss.SSS',
-            minValue: new Date((spansToDisplay[0][1] as Date).getTime() - 500),
-            maxValue: new Date(
-              (spansToDisplay[spansToDisplay.length - 1][2] as Date).getTime() +
-                500
-            )
+            format: "yyyy-MM-dd HH:mm:ss.SSS",
+            minValue: min,
+            maxValue: max
           }
         }
       };
       traceDatas.push(traceData);
     });
-    this.traceDatas = _.orderBy(traceDatas, td => td.dataTable.length, ['desc']);
+    this.traceDatas = _.orderBy(traceDatas, td => td.dataTable.length, [
+      "desc"
+    ]);
     this.length = this.traceDatas.length;
     this.iterator();
   }
 
   processStats() {
     if (!this.stats) {
-      return
+      return;
     }
     function onlyUnique(value, index, self) {
       return self.indexOf(value) === index;
