@@ -332,6 +332,7 @@ github.com/micro/micro/v2 v2.0.1-0.20200212111115-20492755faee h1:142Qy/6LidICUu
 github.com/micro/micro/v2 v2.0.1-0.20200212111115-20492755faee/go.mod h1:liSztxfeylRmJ1vDUHeILH36sVSnte/SvrX9RdLpeJU=
 github.com/micro/platform v0.0.0-20200212111641-948d2fb6c0d2 h1:VBOjfU1cLtd5FxoqaSyN5B4x8GGHdwNamr35TsKSHgE=
 github.com/micro/platform v0.0.0-20200212111641-948d2fb6c0d2/go.mod h1:W6J5vB4AOaWBw/DEFiYgZ22ZEdl4lBP2b0An50nhNek=
+github.com/micro/platform v0.0.0-20200213142542-9c44c2fa3723 h1:XVBkZtnhmL/F/UM4+tDAGhJNQThrNyCE/aSbO22XeEg=
 github.com/micro/platform/api v0.0.0-20200212114434-2748659fe83e/go.mod h1:4Bq3ROqSBgHk+HP41w+2N2eOqeLY7snX2JGXtaAIhqY=
 github.com/micro/protoc-gen-micro v1.0.0/go.mod h1:C8ij4DJhapBmypcT00AXdb0cZ675/3PqUO02buWWqbE=
 github.com/miekg/dns v1.0.14/go.mod h1:W1PPwlIAgtquWBMBEV9nkV9Cazfe8ScdGz/Lj7v3Nrg=

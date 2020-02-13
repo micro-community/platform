@@ -43,7 +43,7 @@ import { ServiceComponent } from "./service/service.component";
 import { FormsModule } from "@angular/forms";
 import { SearchPipe } from "./search.pipe";
 import { NewServiceComponent } from "./new-service/new-service.component";
-import { NgxChartsModule } from "@swimlane/ngx-charts";
+
 
 import { ChartsModule } from "ng2-charts";
 import { WelcomeComponent } from "./welcome/welcome.component";
@@ -105,7 +105,6 @@ export function getHighlightLanguages() {
     MatProgressSpinnerModule,
     MatExpansionModule,
     MatProgressBarModule,
-    NgxChartsModule,
     ChartsModule,
     ClipboardModule,
     HighlightModule,
