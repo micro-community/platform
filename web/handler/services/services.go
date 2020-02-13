@@ -17,7 +17,7 @@ import (
 	logproto "github.com/micro/micro/v2/debug/log/proto"
 	statsproto "github.com/micro/micro/v2/debug/stats/proto"
 	traceproto "github.com/micro/micro/v2/debug/trace/proto"
-	"github.com/micro/platform/web/utils"
+	"github.com/micro/platform/web/util"
 )
 
 // RegisterHandlers adds the service handlers to the service

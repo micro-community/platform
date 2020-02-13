@@ -10,7 +10,7 @@ import (
 	"github.com/dghubble/gologin/v2/github"
 	"github.com/micro/go-micro/v2/auth"
 	"github.com/micro/go-micro/v2/web"
-	"github.com/micro/platform/web/utils"
+	"github.com/micro/platform/web/util"
 	"golang.org/x/oauth2"
 
 	gologinOauth "github.com/dghubble/gologin/v2/oauth2"

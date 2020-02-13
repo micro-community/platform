@@ -5,7 +5,7 @@ import (
 
 	"github.com/micro/go-micro/v2/web"
 	platform "github.com/micro/platform/service/proto"
-	"github.com/micro/platform/web/utils"
+	"github.com/micro/platform/web/util"
 )
 
 // RegisterHandlers adds the GitHub oauth handlers to the servie
