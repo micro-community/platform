@@ -11,7 +11,7 @@ import { Router } from "@angular/router";
   encapsulation: ViewEncapsulation.None
 })
 export class NewServiceComponent implements OnInit {
-  serviceName = "go.micro.srv.foobar";
+  serviceName = "";
   code: string = "";
   intervalId: any;
   events: types.Event[] = [];
