@@ -46,6 +46,20 @@ export class ServiceComponent implements OnInit {
     return false;
   }
 
+  metadata(node: types.Node) {
+    let serialised = "No metadata.";
+    if (!node.metadata) {
+      return serialised;
+    }
+    serialised = "";
+    const v = JSON.parse(JSON.stringify(node.metadata))
+    console.log(v)
+    for (var key in v) {
+      serialised += key + ": " + node.metadata[key] + "\n";
+    }
+    return serialised;
+  }
+
   prettyId(id: string) {
     return id.substring(0, 8);
   }
@@ -427,12 +441,16 @@ ${indent}}`;
   }
 
   // config options taken from https://www.chartjs.org/samples/latest/scales/time/financial.html
-  options(ylabel: string, distribution?: string) {
+  options(title: string, ylabel: string, distribution?: string) {
     if (!distribution) {
       distribution = "series";
     }
     return {
       options: {
+        title: {
+          display: true,
+          text: title,
+        },
         maintainAspectRatio: false,
         animation: {
           duration: 0
@@ -507,11 +525,11 @@ ${indent}}`;
       lineChartType: "line"
     };
   }
-  memoryRates = this.options("memory usage (MB)");
-  requestRates = this.options("requests/second");
-  errorRates = this.options("errors/second");
-  concurrencyRates = this.options("goroutines");
-  gcRates = this.options("garbage collection (nanoseconds/seconds)");
+  memoryRates = this.options("Memory Usage", "memory usage (MB)");
+  requestRates = this.options("Requests per second", "requests/second");
+  errorRates = this.options("Errors per second", "errors/second");
+  concurrencyRates = this.options("Number of goroutines", "goroutines");
+  gcRates = this.options("Garbage collection time", "garbage collection (nanoseconds/seconds)");
 
   // code editor
   coptions = {
