@@ -2,18 +2,47 @@
   <mat-spinner
     [diameter]="70"
     style="margin: auto;"
-    *ngIf="!services"
+  *ngIf="!services"
   ></mat-spinner>
 </div>
-<div *ngIf="services" style="padding-left: 1em; margin: auto;">
-  <mat-card class="mat-card-flat">
-    <mat-card-title>
-      <a routerLink="/services">services</a>&nbsp; &gt;
-      <mat-icon style="color: green; vertical-align: middle;"
-        >fiber_manual_record</mat-icon
-      >
-      {{ serviceName }}
+<div *ngIf="services" style="margin: auto;">
+  <mat-card style="margin-top: 0em; padding-top: 0em;" class="mat-card-flat">
+    <mat-card-title
+      fxLayout="row"
+      fxLayout.lt-md="column"
+      style="align-items: center;"
+    >
+      <div>
+        <a routerLink="/services"
+          >services <span fxHide.lt-md>&gt; &nbsp;</span></a
+        >
+      </div>
+      <div>
+        <mat-icon style="color: green; vertical-align: middle;"
+          >fiber_manual_record</mat-icon
+        >
+        &nbsp;{{ serviceName }} &nbsp;
+      </div>
+      <div>
+        <!-- The ngStyle background color is a horrible hack due to mat-chips not
+        supporting dynamically the selected property. -->
+        <mat-chip-list selectable="false" aria-label="Versions">
+          <mat-chip
+            selectable="false"
+            (click)="versionSelected(service)"
+            *ngFor="let service of services"
+            [ngStyle]="
+              selectedVersion == service.version && {
+                'background-color': '#673ab7',
+                color: 'white'
+              }
+            "
+            >{{ service.version }}</mat-chip
+          >
+        </mat-chip-list>
+      </div>
     </mat-card-title>
+
     <mat-tab-group
       animationDuration="0ms"
       [selectedIndex]="selected"
@@ -31,7 +60,7 @@
             />
           </mat-form-field>
         </form>
-        <ng-container *ngFor="let service of services">
+        <ng-container *ngFor="let service of pickVersion(services)">
           <div
             *ngFor="
               let endpoint of service.endpoints | search: 'name':endpointQuery
@@ -63,7 +92,11 @@
                   <mat-tab label="Call">
                     <ng-template matTabContent>
                       <br />
-                      <div fxLayout="row" fxLayoutGap="1em">
+                      <div
+                        fxLayout.lt-md="column"
+                        fxLayout="row"
+                        fxLayoutGap="1em"
+                      >
                         <div fxFlex="calc(50% - 0.5em)">
                           Request<br /><br />
                           <ngx-monaco-editor
@@ -111,9 +144,14 @@
             >
           </div>
           <br />
-          <div fxLayout="row wrap" fxLayoutAlign="space-between">
-            <div fxFlex="48%" style="margin-bottom: 2em; height:300px;">
-              <canvas
+          <div
+ 
+            fxLayout.lt-md="column wrap"
+            fxLayout="row wrap"
+            fxLayoutAlign="space-between"
+          >
+            <div style="margin-bottom: 2em;">
+              <canvas fxFlex.lt-md="100%" fxFlex="48%"
                 *ngIf="requestRates.data.length > 0"
                 baseChart
                 [colors]="requestRates.chartColors"
@@ -122,7 +160,7 @@
                 [chartType]="requestRates.lineChartType"
               ></canvas>
             </div>
-            <div fxFlex="48%" style="margin-bottom: 2em; height:300px;">
+            <div fxFlex="48%" style="margin-bottom: 2em; ">
               <canvas
                 *ngIf="errorRates.data.length > 0"
                 baseChart
@@ -132,7 +170,7 @@
                 [chartType]="errorRates.lineChartType"
               ></canvas>
             </div>
-            <div fxFlex="48%" style="margin-bottom: 2em; height:300px;">
+            <div fxFlex="48%" style="margin-bottom: 2em; ">
               <canvas
                 *ngIf="memoryRates.data.length > 0"
                 baseChart
@@ -142,7 +180,7 @@
                 [chartType]="memoryRates.lineChartType"
               ></canvas>
             </div>
-            <div fxFlex="48%" style="margin-bottom: 2em; height:300px;">
+            <div fxFlex="48%" style="margin-bottom: 2em; ">
               <canvas
                 *ngIf="concurrencyRates.data.length > 0"
                 baseChart
@@ -152,7 +190,7 @@
                 [chartType]="concurrencyRates.lineChartType"
               ></canvas>
             </div>
-            <div fxFlex="48%" style="margin-bottom: 2em; height:300px;">
+            <div fxFlex="48%" style="margin-bottom: 2em; ">
               <canvas
                 *ngIf="gcRates.data.length > 0"
                 baseChart
@@ -162,7 +200,7 @@
                 [chartType]="gcRates.lineChartType"
               ></canvas>
             </div>
-            <div fxFlex="48%" style="margin-bottom: 2em; height:300px;">
+            <div fxFlex="48%" style="margin-bottom: 2em;">
               <canvas
                 *ngIf="uptime.data.length > 0"
                 baseChart

@@ -22,6 +22,7 @@ export class ServiceComponent implements OnInit {
   stats: types.DebugSnapshot[];
   traceSpans: types.Span[];
   traceDatas: any[] = [];
+  selectedVersion = "";
   traceDatasPart: any[] = [];
   serviceName: string;
   endpointQuery: string;
@@ -52,8 +53,8 @@ export class ServiceComponent implements OnInit {
       return serialised;
     }
     serialised = "";
-    const v = JSON.parse(JSON.stringify(node.metadata))
-    console.log(v)
+    const v = JSON.parse(JSON.stringify(node.metadata));
+    console.log(v);
     for (var key in v) {
       serialised += key + ": " + node.metadata[key] + "\n";
     }
@@ -89,32 +90,55 @@ export class ServiceComponent implements OnInit {
             endpoint.requestJSON = this.valueToJson(endpoint.request, 1);
           });
         });
+        this.selectedVersion =
+          this.services.filter(s => s.version == "latest").length > 0
+            ? "latest"
+            : this.services[0].version;
       });
-      this.ses.logs(this.serviceName).then(logs => {
-        this.logs = logs;
+      this.loadVersionData();
+    });
+  }
+
+  pickVersion(services: types.Service[]): types.Service[] {
+    return services.filter(s => {
+      return s.version == this.selectedVersion;
+    });
+  }
+
+  loadVersionData() {
+    this.ses.logs(this.serviceName).then(logs => {
+      this.logs = logs;
+    });
+    this.ses.trace(this.serviceName).then(spans => {
+      this.processTraces(spans);
+    });
+    this.intervalId = setInterval(() => {
+      if (this.selected !== 2 || !this.refresh) {
+        return;
+      }
+      this.ses.stats(this.serviceName).then(stats => {
+        this.stats = stats;
+        this.processStats();
       });
-      this.ses.trace(this.serviceName).then(spans => {
-        this.processTraces(spans);
-      });
-      this.intervalId = setInterval(() => {
-        if (this.selected !== 2 || !this.refresh) {
-          return;
-        }
-        this.ses.stats(this.serviceName).then(stats => {
-          this.stats = stats;
-          this.processStats();
-        });
-      }, 5000);
-      this.tabValueChange.subscribe(index => {
-        if (index !== 2 || !this.refresh) {
-          return;
-        }
-        this.ses.stats(this.serviceName).then(stats => {
-          this.stats = stats;
-          this.processStats();
-        });
+    }, 5000);
+    this.tabValueChange.subscribe(index => {
+      if (index !== 2 || !this.refresh) {
+        return;
+      }
+      this.ses.stats(this.serviceName).then(stats => {
+        this.stats = stats;
+        this.processStats();
       });
     });
+  }
+
+  versionSelected(service: types.Service) {
+    if (this.selectedVersion == service.version) {
+      this.selectedVersion = "";
+      return;
+    }
+    this.selectedVersion = service.version;
+    this.loadVersionData();
   }
 
   tabChange($event: number) {
@@ -468,9 +492,9 @@ ${indent}}`;
       options: {
         title: {
           display: true,
-          text: title,
+          text: title
         },
-        maintainAspectRatio: false,
+        //maintainAspectRatio: false,
         animation: {
           duration: 0
         },
@@ -548,7 +572,10 @@ ${indent}}`;
   requestRates = this.options("Requests per second", "requests/second");
   errorRates = this.options("Errors per second", "errors/second");
   concurrencyRates = this.options("Number of goroutines", "goroutines");
-  gcRates = this.options("Garbage collection time", "garbage collection (nanoseconds/seconds)");
+  gcRates = this.options(
+    "Garbage collection time",
+    "garbage collection (nanoseconds/seconds)"
+  );
   uptime = this.options("Uptime", "uptime (seconds)");
 
   // code editor

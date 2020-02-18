@@ -49,7 +49,7 @@ export class ServiceService {
     });
   }
 
-  stats(service: string): Promise<types.DebugSnapshot[]> {
+  stats(service: string, version?: string): Promise<types.DebugSnapshot[]> {
     return new Promise<types.DebugSnapshot[]>((resolve, reject) => {
       return this.http
         .get<types.DebugSnapshot[]>(

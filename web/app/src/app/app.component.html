@@ -1,6 +1,12 @@
-<div style="width:80%; margin: auto;">
-  <mat-toolbar style="padding: 1em; background-color: white">
-    <mat-toolbar-row>
+<div
+  ngStyle.lt-md="width: 95%; height: 100%; margin: auto;"
+  ngStyle.lt-lg="width: 75%; height: 100%; margin: auto;"
+  style="width: 60%; height: 100%; margin: auto;"
+>
+  <mat-toolbar style="padding: 1em; padding-left: 0em; background-color: white">
+    <mat-toolbar-row
+      style="padding-bottom: 0; padding-left: 0.5em; padding-right: 0.5em;"
+    >
       <button mat-icon-button (click)="sidenav.toggle()" fxHide.gt-sm>
         <mat-icon>menu</mat-icon>&nbsp;&nbsp;&nbsp;
       </button>
@@ -69,8 +75,8 @@
     </mat-toolbar-row>
   </mat-toolbar>
 
-  <mat-sidenav-container style="height: 100%" fxFlexFill>
-    <mat-sidenav style="width: 30%" #sidenav>
+  <mat-sidenav-container>
+    <mat-sidenav style="width: 66%;" #sidenav>
       <mat-nav-list>
         <div><a (click)="sidenav.toggle()" mat-list-item>Close</a></div>
         <div>
@@ -84,9 +90,15 @@
           >
         </div>
         <div><a href="https://micro.mu/community" mat-button>Community</a></div>
+        <div *ngIf="user && user.name">
+          <a routerLink="/settings/tokens" (click)="sidenav.toggle()" mat-button>Settings</a>
+        </div>
+        <div *ngIf="user && user.name">
+          <a (click)="us.logout()" mat-button>Sign out</a>
+        </div>
       </mat-nav-list>
     </mat-sidenav>
-    <mat-sidenav-content style="padding: 1em; background: white;" fxFlexFill>
+    <mat-sidenav-content style="background: white;" fxFlexFill>
       <simple-notifications></simple-notifications>
       <router-outlet></router-outlet>
     </mat-sidenav-content>
