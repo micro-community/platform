@@ -14,6 +14,7 @@ export class NewServiceComponent implements OnInit {
   serviceName = "";
   code: string = "";
   runCode: string = "";
+  token = "";
   intervalId: any;
   lastKeypress = new Date();
   events: types.Event[] = [];
@@ -36,6 +37,7 @@ export class NewServiceComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.token = this.us.token();
     this.lastKeypress.setDate(this.lastKeypress.getDate() + 14);
     this.newCode();
     this.newRunCode();
@@ -119,25 +121,20 @@ export class NewServiceComponent implements OnInit {
 
   newCode() {
     this.code =
-      `# Don't forget to log in here: https://micro.mu/platform/settings/tokens
-git clone https://github.com/micro/services.git
-
-cd services
+      `# Checkout the services repo
+git clone https://github.com/micro/services && cd services
+# Create new service
 micro new ` +
       this.serviceName +
       `
 cd ` +
       this.serviceName +
       `
-
+# Build the service
 make build
-
+# Push to GitHub
 git config --local core.hooksPath .githooks
-git add .
-git commit -m "Initializing ` +
-      this.serviceName +
-      `"
-git push`;
+git add . && git commit -m "Initialising service ` + this.serviceName + `" && git push`;
   }
 
   newRunCode() {
