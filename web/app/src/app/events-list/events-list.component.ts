@@ -7,7 +7,7 @@ const eventTypes = {
   3: "ServiceUpdated",
   4: "SourceUpdated",
   5: "BuildStarted",
-  6: "BuildFinished"
+  6: "BuildFinished",
   7: "BuildFailed"
 };
 
@@ -17,7 +17,7 @@ const eventTypesNice = {
   3: "service updated",
   4: "source updated",
   5: "build started",
-  6: "build finished"
+  6: "build finished",
   7: "build failed"
 };
 
