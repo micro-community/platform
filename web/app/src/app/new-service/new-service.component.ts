@@ -44,9 +44,10 @@ export class NewServiceComponent implements OnInit {
     this.lastKeypress.setDate(this.lastKeypress.getDate() + 14);
     this.newCode();
     this.newRunCode();
+    this.serviceName = this.namespace + '.' + this.serviceType + '.' + this.alias;
+    
     this.intervalId = setInterval(() => {
-      this.ses.events(this.alias).then(events => {
-        this.serviceName = this.namespace + '.' + this.serviceType + '.' + this.alias;
+      this.ses.events(this.serviceName).then(events => {
         this.events = events;
         this.checkEvents();
       });
