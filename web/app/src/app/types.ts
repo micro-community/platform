@@ -98,10 +98,10 @@ export interface TraceSnapshot {
 
 export interface EventService {
   name: string;
-  version: string;
-  source: string;
-  type: string;
-  metadata: Map<string, string>;
+  version?: string;
+  source?: string;
+  type?: string;
+  metadata?: Map<string, string>;
 }
 
 // Platform event
