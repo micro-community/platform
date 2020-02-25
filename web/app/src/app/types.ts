@@ -108,6 +108,6 @@ export interface EventService {
 export interface Event {
   type: number;
   timestamp: number;
-  metadata: Map<string, string>;
+  metadata: {string: string};
   service: EventService;
 }
