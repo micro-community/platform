@@ -29,12 +29,28 @@ const eventTypesNice = {
 })
 export class EventsListComponent implements OnInit {
   @Input() events: types.Event[];
+  searched: types.Event[];
+  eventsPart: types.Event[] = [];
   testEvents: types.Event[] = testEvents.default;
   query: string = "";
 
+  public pageSize = 30;
+  public currentPage = 0;
+  public length = 0;
+
   constructor() {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    //this.events = this.testEvents;
+    this.searched = this.events;
+    this.length = this.searched.length;
+    this.iterator();
+  }
+
+  ngOnChanges(changes) {
+    this.length = this.events.length;
+    this.iterator();
+  }
 
   eventTypeToString(e: types.Event): string {
     return eventTypesNice[e.type];
@@ -76,5 +92,27 @@ export class EventsListComponent implements OnInit {
 
   shortHash(s: string): string {
     return s.slice(0, 8);
+  }
+
+  public handlePage(e: any) {
+    this.currentPage = e.pageIndex;
+    this.pageSize = e.pageSize;
+    this.iterator();
+  }
+
+  private iterator() {
+    const end = (this.currentPage + 1) * this.pageSize;
+    const start = this.currentPage * this.pageSize;
+    const part = this.searched.slice(start, end);
+    this.eventsPart = part;
+  }
+
+  search() {
+    this.searched = this.events.filter(e => {
+      return e.service.name.includes(this.query);
+    });
+    this.currentPage = 0;
+    this.length = this.searched.length;
+    this.iterator();
   }
 }
