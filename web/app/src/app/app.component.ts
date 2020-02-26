@@ -18,4 +18,8 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     this.user = this.us.user;
   }
+
+  goToTeam() {
+    window.location.replace(this.us.user.teamURL)
+  }
 }

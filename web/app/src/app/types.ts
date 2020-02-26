@@ -1,6 +1,9 @@
 export interface User {
   name: string;
   email: string;
+  avatarURL: string;
+  teamName: string;
+  teamURL: string;
 }
 
 export interface Value {
@@ -108,6 +111,6 @@ export interface EventService {
 export interface Event {
   type: number;
   timestamp: number;
-  metadata: {string: string};
+  metadata: { string: string };
   service: EventService;
 }
