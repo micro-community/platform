@@ -4,6 +4,7 @@ export interface User {
   avatarURL: string;
   teamName: string;
   teamURL: string;
+  organizationAvatarURL: string;
 }
 
 export interface Value {

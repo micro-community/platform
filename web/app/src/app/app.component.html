@@ -23,7 +23,19 @@
         <a routerLink="/services" mat-button>Services</a>
         <a routerLink="/events" mat-button>Events</a>
 
-        <mat-menu [overlapTrigger]="false" xPosition="before" #menu="matMenu">
+        <mat-menu id="matmenu" #menu="matMenu">
+          <button
+            mat-menu-item
+            (click)="goToTeam()"
+            *ngIf="user && user.teamName && user.teamURL"
+          >
+            <img
+              *ngIf="user.organizationAvatarURL"
+              style="vertical-align: middle; margin-right: 0.25em; border-radius: 3px; height: 2em; width: 2em;"
+              src="{{ user.organizationAvatarURL }}"
+            />
+            <span style="font-weight: 700">{{ user.teamName }}</span>
+          </button>
           <button
             class="tokens"
             id="tokens"
@@ -31,13 +43,6 @@
             routerLink="/settings/tokens"
           >
             Settings
-          </button>
-          <button
-            mat-menu-item
-            (click)="goToTeam()"
-            *ngIf="user && user.teamName && user.teamURL"
-          >
-            {{ user.teamName }}
           </button>
           <button
             class="logout"
@@ -58,6 +63,7 @@
             id="dropdown-menu"
           >
             <img
+              *ngIf="user.avatarURL"
               style="vertical-align: middle; margin-right: 0.25em; border-radius: 3px; height: 2em; width: 2em;"
               src="{{ user.avatarURL }}"
             />

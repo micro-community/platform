@@ -106,11 +106,12 @@ func issueSession(service web.Service) http.Handler {
 		}
 		acc, err := service.Options().Service.Options().Auth.Generate(*githubUser.Email, auth.Metadata(
 			map[string]string{
-				"email":      *githubUser.Email,
-				"name":       *githubUser.Name,
-				"avatar_url": githubUser.GetAvatarURL(),
-				"team_name":  teamName,
-				"team_url":   teamURL,
+				"email":                   *githubUser.Email,
+				"name":                    *githubUser.Name,
+				"avatar_url":              githubUser.GetAvatarURL(),
+				"team_name":               teamName,
+				"team_url":                teamURL,
+				"organization_avatar_url": org.GetAvatarURL(),
 			}))
 		if err != nil {
 			utils.Write500(w, err)
@@ -136,11 +137,12 @@ func issueSession(service web.Service) http.Handler {
 }
 
 type User struct {
-	Name      string `json:"name"`
-	Email     string `json:"email"`
-	AvatarURL string `json:"avatarURL"`
-	TeamName  string `json:"teamName"`
-	TeamURL   string `json:"teamURL"`
+	Name                  string `json:"name"`
+	Email                 string `json:"email"`
+	AvatarURL             string `json:"avatarURL"`
+	TeamName              string `json:"teamName"`
+	TeamURL               string `json:"teamURL"`
+	OrganizationAvatarURL string `json:"organizationAvatarURL"`
 }
 
 func userHandler(service web.Service) func(http.ResponseWriter, *http.Request) {
@@ -171,11 +173,12 @@ func userHandler(service web.Service) func(http.ResponseWriter, *http.Request) {
 		}
 
 		utils.WriteJSON(w, &User{
-			Name:      acc.Metadata["name"],
-			Email:     acc.Metadata["email"],
-			AvatarURL: acc.Metadata["avatar_url"],
-			TeamName:  acc.Metadata["team_name"],
-			TeamURL:   acc.Metadata["team_url"],
+			Name:                  acc.Metadata["name"],
+			Email:                 acc.Metadata["email"],
+			AvatarURL:             acc.Metadata["avatar_url"],
+			TeamName:              acc.Metadata["team_name"],
+			TeamURL:               acc.Metadata["team_url"],
+			OrganizationAvatarURL: acc.Metadata["organization_avatar_url"],
 		})
 	}
 }
