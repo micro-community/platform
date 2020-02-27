@@ -91,6 +91,9 @@ export class EventsListComponent implements OnInit {
   }
 
   shortHash(s: string): string {
+    if (!s) {
+      return ""
+    }
     return s.slice(0, 8);
   }
 
@@ -103,7 +106,7 @@ export class EventsListComponent implements OnInit {
   private iterator() {
     const end = (this.currentPage + 1) * this.pageSize;
     const start = this.currentPage * this.pageSize;
-    const part = this.searched.slice(start, end);
+    const part = this.searched ? this.searched.slice(start, end) : [];
     this.eventsPart = part;
   }
 
