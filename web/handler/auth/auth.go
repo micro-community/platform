@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 
 	"github.com/dghubble/gologin/v2"
 	"github.com/dghubble/gologin/v2/github"
@@ -129,7 +128,6 @@ func issueSession(service web.Service) http.Handler {
 			Value:   acc.Token,
 			Expires: acc.Expiry,
 			Path:    "/",
-			Domain:  strings.ReplaceAll(os.Getenv("FRONTEND_ADDRESS"), "https://", "*"),
 		})
 
 		http.Redirect(w, req, os.Getenv("FRONTEND_ADDRESS")+"/services", http.StatusFound)
