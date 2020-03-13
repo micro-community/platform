@@ -2,6 +2,8 @@ package handler
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/micro/go-micro/v2/errors"
 	"github.com/micro/go-micro/v2/runtime"
@@ -16,7 +18,17 @@ func (h *Handler) CreateService(ctx context.Context, req *pb.CreateServiceReques
 
 	service := deserializeService(req.Service)
 
-	if err := h.Runtime.Create(service, runtime.CreateType(req.Service.Type)); err != nil {
+	// specify the image to use
+	formattedName := strings.ReplaceAll(service.Name, "/", "-")
+	image := fmt.Sprintf("%v/%v", Image, formattedName)
+
+	opts := []runtime.CreateOption{
+		// create a specific service type
+		runtime.CreateType(req.Service.Type),
+		runtime.CreateImage(image),
+	}
+
+	if err := h.Runtime.Create(service, opts...); err != nil {
 		return err
 	}
 
