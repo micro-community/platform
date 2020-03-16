@@ -32,7 +32,7 @@ for [terraform state storage](https://www.terraform.io/docs/backends/types/s3.ht
 To destroy, `./platform infra destroy -c platforms.yaml`.
 
 Configuration options can be set with viper, for example
-[https://github.com/micro/platform/blob/cc27173/cmd/infra.go#L44](the state-store flag) can be set by
+[the state-store flag](https://github.com/micro/platform/blob/cc27173/cmd/infra.go#L44) can be set by
 setting the environment variable `MICRO_STATE_STORE`.
 
 See the [docs](docs) for more info.
