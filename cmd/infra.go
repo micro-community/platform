@@ -50,26 +50,27 @@ func infraConfig() {
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 	viper.AutomaticEnv()
 
-	cfgfile := viper.Get("config-file")
-	if cfg, ok := cfgfile.(string); ok {
-		if cfg == "" {
-			infraCmd.Help()
-			fmt.Fprintf(os.Stderr, "\nError: Config file is a required flag\n")
-			os.Exit(1)
-		}
-		viper.SetConfigFile(cfg)
-	} else {
-		fmt.Fprintf(os.Stderr, "\nError: Config file flag malformed\n")
-	}
+	// cfgfile := viper.Get("config-file")
+	// if cfg, ok := cfgfile.(string); ok {
+	// 	if cfg == "" {
+	// 		infraCmd.Help()
+	// 		fmt.Fprintf(os.Stderr, "\nError: Config file is a required flag\n")
+	// 		os.Exit(1)
+	// 	}
+	// 	viper.SetConfigFile(cfg)
+	// } else {
+	// 	fmt.Fprintf(os.Stderr, "\nError: Config file flag malformed\n")
+	// }
 
 	// Read in config
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
-	} else {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			fmt.Fprintf(os.Stderr, "Error: Config file not found: %s\n", viper.Get("config-file"))
-		}
 	}
+	// } else {
+	// 	if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+	// 		fmt.Fprintf(os.Stderr, "Error: Config file not found: %s\n", viper.Get("config-file"))
+	// 	}
+	// }
 }
 
 // planCmd represents the plan command
