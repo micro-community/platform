@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 
@@ -19,7 +20,12 @@ var webCmd = &cobra.Command{
 		web.Stderr = os.Stderr
 		web.Dir = "./web"
 		if err := web.Run(); err != nil {
-			os.Exit(err.(*exec.ExitError).ExitCode())
+			exitError, ok := err.(*exec.ExitError)
+			if ok {
+				os.Exit(exitError.ExitCode())
+			}
+			fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+			os.Exit(1)
 		}
 	},
 }
